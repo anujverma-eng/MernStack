@@ -1,0 +1,27 @@
+{
+  "name": "ecommerce",
+  "version": "1.0.0",
+  "description": "",
+  "main": "backend/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anujverma-eng/MernStack.git"
+  },
+  "author": "Anuj Verma",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/anujverma-eng/MernStack/issues"
+  },
+  "homepage": "https://github.com/anujverma-eng/MernStack#readme",
+  "dependencies": {
+    "dotenv": "^14.3.2",
+    "express": "^4.17.2",
+    "mongoose": "^6.1.8",
+    "nodemon": "^2.0.15"
+  }
+}
