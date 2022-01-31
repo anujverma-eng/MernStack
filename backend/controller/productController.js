@@ -2,6 +2,7 @@ const express = require("express");
 const Product = require("../models/productModel");
 const ErrorHandler = require("../utils/errorhandler");
 const catchAsyncError = require("../middleware/catchAsynError");
+const ApiFeatures = require("../utils/apifeatures");
 
 // * ONLY ADMIN can Create Product      *****     Jan,30 - 19:52 //
 exports.createProduct = catchAsyncError(async (req, res, next) => {
@@ -16,10 +17,17 @@ exports.createProduct = catchAsyncError(async (req, res, next) => {
 
 // * Get all Products     *****     Jan,30 - 20:06 //
 exports.getAllProducts = catchAsyncError(async (req, res) => {
-    const products = await Product.find();
+
+    const resultPerPage = 5;
+    const productCount = await Product.countDocuments();
+
+
+    const apifeature = new ApiFeatures(Product.find(), req.query).search().filter().pagination(resultPerPage);
+    const products = await apifeature.query;
     res.status(200).json({
         success: true,
-        products
+        products,
+        productCount
     })
 });
 
@@ -34,7 +42,8 @@ exports.getProductDetails = catchAsyncError(async (req, res, next) => {
 
     res.status(200).json({
         success: true,
-        product
+        product,
+        productCount
     })
 });
 
