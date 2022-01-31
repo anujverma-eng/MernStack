@@ -12,20 +12,18 @@ exports.isAuthenticatedUser = catchAsynError(async (req, res, next) => {
     }
 
     const decodedData = jwt.verify(token, process.env.JWT_SECRET);
+    
+    req.user = await User.findById(decodedData.id);
 
-    req.user = await User.findById(decodedData._id);
-
+    console.log(req.user);
+    
     next();
 
 });
 
 exports.authorizeRoles = (...roles)=>{
     
-    return(req,res,next)=>{
-        console.log(roles);
-        
-        console.log(req.user);
-        
+    return (req,res,next)=>{
         // * If User : then run If Block else Run next();     *****     Jan,31 - 17:04 //
         if(!roles.includes(req.user.role)){
             
