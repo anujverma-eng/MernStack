@@ -63,5 +63,7 @@ userSchema.methods.comparePassword = async function (enteredPassword) {
 
 }
 
+// TODO: Start RESET Password     *****     Jan,31 - 20:14 //
+
 
 module.exports = mongoose.model("User", userSchema);

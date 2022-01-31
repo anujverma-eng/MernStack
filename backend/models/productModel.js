@@ -61,6 +61,12 @@ const productSchema = new mongoose.Schema({
             }
         }
     ],
+    user:{
+        // TODO: IF error do :: type: mongoose.Schema.Type.ObjectId     *****     Jan,31 - 20:13 //
+        type:mongoose.Schema.ObjectId,
+        ref:"User",
+        required:true
+    },
     createdAt:{
         type:Date,
         default:Date.now
