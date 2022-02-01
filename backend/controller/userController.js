@@ -2,7 +2,8 @@ const ErrorHandler = require("../utils/errorhandler");
 const catchAsyncError = require("../middleware/catchAsynError");
 const User = require("../models/userModel");
 const sendToken = require("../utils/jwtToken");
-const sendEmail = require("../utils/sendEmail")
+const sendEmail = require("../utils/sendEmail");
+const crypto = require("crypto");
 
 // * Register a User     *****     Jan,31 - 09:56 //
 exports.registerUser = catchAsyncError(async (req, res, next) => {
@@ -43,38 +44,38 @@ exports.loginUser = catchAsyncError(async (req, res, next) => {
     }
 
     // console.log(user);
-    
+
     sendToken(user, 200, res);
 
 });
 
 // * Log OUT     *****     Jan,31 - 16:43 //
-exports.logout=catchAsyncError(async(req,res,next)=>{
+exports.logout = catchAsyncError(async (req, res, next) => {
 
-    res.cookie("token",null,{
-        expires:new Date(Date.now()),
-        httpOnly:true,
+    res.cookie("token", null, {
+        expires: new Date(Date.now()),
+        httpOnly: true,
     });
-    
+
     res.status(200).json({
-        success:true,
-        message:"Logged Out Successfully",
+        success: true,
+        message: "Logged Out Successfully",
     });
 });
 
 // * Forgot Password     *****     Feb,01 - 10:24 //
-exports.forgotPassword = catchAsyncError(async(req,res,next)=>{
+exports.forgotPassword = catchAsyncError(async (req, res, next) => {
 
-    const user =await User.findOne({email:req.body.email});
+    const user = await User.findOne({ email: req.body.email });
 
     if (!user) {
-        return next(new ErrorHandler("User Not Found",404));
+        return next(new ErrorHandler("User Not Found", 404));
     };
 
     // * Get Reset Password Token     *****     Feb,01 - 10:27 //
     const resetToken = user.getResetPasswordToken();
 
-    await user.save({validateBeforeSave: false});
+    await user.save({ validateBeforeSave: false });
 
     // * Creating Link to rest password     *****     Feb,01 - 10:32 //
     const resetPasswordURL = `${req.protocol}://${req.get("host")}/api/v1/password/reset/${resetToken}`;
@@ -83,23 +84,58 @@ exports.forgotPassword = catchAsyncError(async(req,res,next)=>{
 
     try {
         await sendEmail({
-            email:user.email,
-            subject:`Ecommerce_Anuj Password Recovery`,
+            email: user.email,
+            subject: `Ecommerce_Anuj Password Recovery`,
             message
         });
 
         res.status(200).json({
-            success:true,
-            message:`Email Sent to ${user.email} Successfully`,
+            success: true,
+            message: `Email Sent to ${user.email} Successfully`,
         });
-    
+
     } catch (error) {
         user.resetPasswordToken = undefined;
         user.resetPasswordExpire = undefined;
 
-        await user.save({validateBeforeSave: false});
+        await user.save({ validateBeforeSave: false });
 
-        return next(new ErrorHandler(error.message,500));
+        return next(new ErrorHandler(error.message, 500));
     }
+
+});
+
+// * Reset Password     *****     Feb,01 - 12:56 //
+exports.resetPassword = catchAsyncError(async (req, res, next) => {
+
+    // * Creating Token Hash     *****     Feb,01 - 12:59 //
+    const resetPasswordToken = crypto.createHash("sha256")
+        .update(req.params.token)
+        .digest("hex");
+
+    // * Now Search the Token in our database     *****     Feb,01 - 12:59 //
+    const user = await User.findOne({
+        resetPasswordToken,
+        resetPasswordExpire: { $gt: Date.now() },
+    })
+
+    if (!user) {
+        return next(new ErrorHandler("Reset Password Token is Invalid or has been Expired", 400));
+    };
+
+    if (req.body.password !== req.body.confirmPassword) {
+        return next(new ErrorHandler("Password Does not Matched", 400));
+    }
+
+    // * Now the User has updated the Password, and we also need to update it in our database     *****     Feb,01 - 13:05 //
+    user.password = req.body.password;
     
+
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    await user.save();
+
+    sendToken(user,200,res);
+
 });
