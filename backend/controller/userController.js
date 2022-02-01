@@ -139,3 +139,134 @@ exports.resetPassword = catchAsyncError(async (req, res, next) => {
     sendToken(user,200,res);
 
 });
+
+// * Get User Details     *****     Feb,01 - 13:27 //
+exports.getUserDetail = catchAsyncError(async(req,res,next)=>{
+
+    const user = await User.findById(req.user.id);
+    
+    res.status(200).json({
+        success:true,
+        user,
+    });
+});
+
+
+// * Update User Password     *****     Feb,01 - 13:27 //
+exports.updatePassword = catchAsyncError(async(req,res,next)=>{
+
+    const user = await User.findById(req.user.id).select("+password")
+
+    const isPasswordMatch = await user.comparePassword(req.body.oldPassword);
+
+    if (!isPasswordMatch) {
+        return next(new ErrorHandler("Old Password is Incorrect", 400));
+    }
+
+    if (req.body.newPassword !== req.body.confirmPassword) {
+        return next(new ErrorHandler("Password Does not Match", 400));
+    }
+    
+    user.password = req.body.newPassword;
+
+    await user.save();
+    
+    sendToken(user,200,res);
+});
+
+// * Update User Profile     *****     Feb,01 - 13:27 //
+exports.updateProfile = catchAsyncError(async(req,res,next)=>{
+
+    const newUserData = {
+        name:req.body.name,
+        email:req.body.email,
+    }
+
+    // TODO: We will add cloudinary Later, i.e Update Avatar in user Profile     *****     Feb,01 - 14:51 //
+
+    const user = await User.findByIdAndUpdate(req.user.id,newUserData,{
+        new:true,
+        runValidators:true,
+        useFindAndModify:false
+    });
+
+    res.status(200).json({
+        success:true,
+        user
+    })
+
+    sendToken(user,200,res);
+});
+
+// * Get All Users  (ADMIN)   *****     Feb,01 - 15:32 //
+exports.getAllUsers = catchAsyncError(async(req,res,next)=>{
+
+    const users = await User.find();
+    
+    res.status(200).json({
+        success:true,
+        users
+    })
+    
+});
+
+// * Get All Users  (ADMIN)   *****     Feb,01 - 15:32 //
+exports.getSingleUser = catchAsyncError(async(req,res,next)=>{
+
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+        return next(new ErrorHandler("User Does Not Exists",404));
+    }
+    
+    res.status(200).json({
+        success:true,
+        user
+    })
+    
+});
+
+
+// * Update User ROLE  -- ADMIN   *****     Feb,01 - 13:27 //
+exports.updateUserRole = catchAsyncError(async(req,res,next)=>{
+
+    const newUserData = {
+        name:req.body.name,
+        email:req.body.email,
+        role:req.body.role
+    }
+
+    const user = await User.findByIdAndUpdate(req.user.id,newUserData,{
+        new:true,
+        runValidators:true,
+        useFindAndModify:false
+    });
+
+    res.status(200).json({
+        success:true,
+        user
+    })
+
+    sendToken(user,200,res);
+});
+
+// * Delete User  -- ADMIN   *****     Feb,01 - 13:27 //
+exports.deleteUser = catchAsyncError(async(req,res,next)=>{
+
+    // TODO: We will REMOVE  cloudinary Later, i.e Update Avatar in user Profile     *****     Feb,01 - 14:51 //
+
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+        return next(new ErrorHandler("User Does not Exist",404))
+    }
+
+    await user.remove();
+
+    res.status(200).json({
+        success:true,
+        message:"User Deleted Successfully"
+    })
+
+    sendToken(user,200,res);
+});
