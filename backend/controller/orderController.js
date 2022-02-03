@@ -68,35 +68,5 @@ exports.myOrders = catchAsyncError(async (req, res, next) => {
     });
 });
 
-// * Delete Order --- Created by Real me    *****     Feb,02 - 18:48 //
-// exports.deleteOrder = catchAsyncError(async (req, res, next) => {
-
-//     const order = await Order.findById(req.params.id);
-//     const userId = req.body;
-
-//     if(!order){
-//         return next(new ErrorHandler("Order Not found with this id",404));
-//     }
-
-//     console.log("User Logged In: "+req.user._id.toString());
-//     console.log("Order.user:     "+order.user.toString());
-    
-    
-//     // * Only the Logged in user with his own order can delete this order.     *****     Feb,02 - 19:18 //
-//     if(order.user.toString()===req.user._id.toString() || req.user.role ==="admin"){
-//         console.log("Success");
-        
-//         await order.remove();
-//     }else{
-//         return next(new ErrorHandler("You can't delete this order as you are to not the right authority to access this order"))
-//     }
-
-//     res.status(200).json({
-//         success: true,
-//         message:"Order Removed successfully"
-//     });
-    
-
-// });
-
+// * Get All Orders     *****     Feb,03 - 13:32 //
 
